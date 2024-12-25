@@ -126,16 +126,32 @@ function checkForBoxClosure() {
             const bottomLeft = dots[row + 1][col];
             const bottomRight = dots[row + 1][col + 1];
 
+            const boxLines = [
+                [topLeft, topRight],
+                [topRight, bottomRight],
+                [bottomRight, bottomLeft],
+                [bottomLeft, topLeft]
+            ];
+
+            const boxAlreadyExists = boxes.some(existingBox => {
+                const existingBoxLines = existingBox.lines;
+                return boxLines.every(line =>
+                    existingBoxLines.some(existingLine =>
+                        (existingLine[0] === line[0] && existingLine[1] === line[1]) ||
+                        (existingLine[0] === line[1] && existingLine[1] === line[0])
+                    )
+                );
+            });
+
+
             if (isLineAlreadyDrawn(topLeft, topRight) &&
                 isLineAlreadyDrawn(topRight, bottomRight) &&
                 isLineAlreadyDrawn(bottomRight, bottomLeft) &&
-                isLineAlreadyDrawn(bottomLeft, topLeft)) {
-
-                const existingBox = boxes.find(box => box.x === topLeft.x && box.y === topLeft.y);
-                if (!existingBox) {
-                    boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
+                isLineAlreadyDrawn(bottomLeft, topLeft) &&
+                !boxAlreadyExists
+               ) {
+                    boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer, lines: boxLines });
                     boxesClosed++;
-                }
             }
         }
     }
