@@ -62,16 +62,36 @@ function drawBox(box) {
 }
 
 function getClickedDot(x, y) {
+    let clickedDot = null;
     for (let row = 0; row < gridSize; row++) {
         for (let col = 0; col < gridSize; col++) {
             const dot = dots[row][col];
             const distance = Math.sqrt((x - dot.x) ** 2 + (y - dot.y) ** 2);
             if (distance < dotRadius) {
-                return dot;
+                clickedDot = dot;
+                break;
             }
         }
+         if (clickedDot) {
+            break;
+        }
     }
-    return null;
+
+    if (!clickedDot || !firstDot) {
+        return clickedDot;
+    }
+
+    const row1 = dots.findIndex(row => row.includes(firstDot));
+    const col1 = dots[row1].findIndex(dot => dot === firstDot);
+    const row2 = dots.findIndex(row => row.includes(clickedDot));
+    const col2 = dots[row2].findIndex(dot => dot === clickedDot);
+
+
+    if (Math.abs(row1 - row2) + Math.abs(col1 - col2) !== 1) {
+        return null;
+    }
+
+    return clickedDot;
 }
 
 function isLineAlreadyDrawn(dot1, dot2) {
