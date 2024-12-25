@@ -133,13 +133,13 @@ function checkForBoxClosure() {
 
                 const existingBox = boxes.find(box => box.x === topLeft.x && box.y === topLeft.y);
                 if (!existingBox) {
-                    boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
-                    boxesClosed++;
+                     boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
+                     boxesClosed++;
                 }
             }
         }
     }
-    return boxesClosed;
+   return boxesClosed;
 }
 
 function updateScore() {
@@ -159,10 +159,12 @@ canvas.addEventListener('click', (event) => {
             const boxesClosed = checkForBoxClosure();
             scores[currentPlayer] += boxesClosed;
             updateScore();
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            if (boxesClosed === 0) {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+            }
             firstDot = null;
             drawBoard();
-        } else {
+        }  else {
             firstDot = clickedDot;
         }
     }
