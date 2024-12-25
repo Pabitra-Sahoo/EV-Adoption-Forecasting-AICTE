@@ -8,4 +8,5 @@ body {
 canvas {
     border: 1px solid black;
     cursor: pointer;
+    background-color: #f0f0f0;
 }

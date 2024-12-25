@@ -43,7 +43,7 @@ function drawBoard() {
 function drawDot(dot) {
     ctx.beginPath();
     ctx.arc(dot.x, dot.y, dotRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'orange';
     ctx.fill();
 }
 
@@ -54,11 +54,25 @@ function drawLine(line) {
     ctx.strokeStyle = line.player === 1 ? 'blue' : 'red';
     ctx.lineWidth = 2;
     ctx.stroke();
+    // Line animation
+    ctx.strokeStyle = line.player === 1 ? 'lightblue' : 'pink';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    setTimeout(() => {
+        ctx.strokeStyle = line.player === 1 ? 'blue' : 'red';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }, 100);
 }
 
 function drawBox(box) {
     ctx.fillStyle = box.player === 1 ? 'rgba(0, 0, 255, 0.2)' : 'rgba(255, 0, 0, 0.2)';
+    // Box fill animation
     ctx.fillRect(box.x, box.y, dotDistance, dotDistance);
+    ctx.fillStyle = box.player === 1 ? 'rgba(0, 0, 255, 0.4)' : 'rgba(255, 0, 0, 0.4)';
+    setTimeout(() => {
+        ctx.fillRect(box.x, box.y, dotDistance, dotDistance);
+    }, 100);
 }
 
 function getClickedDot(x, y) {
@@ -103,61 +117,25 @@ function isLineAlreadyDrawn(dot1, dot2) {
     return false;
 }
 
-function checkForBoxClosure(dot1, dot2) {
-    const row1 = dots.findIndex(row => row.includes(dot1));
-    const col1 = dots[row1].findIndex(dot => dot === dot1);
-    const row2 = dots.findIndex(row => row.includes(dot2));
-    const col2 = dots[row2].findIndex(dot => dot === dot2);
-
-    if (Math.abs(row1 - row2) + Math.abs(col1 - col2) !== 1) {
-        return false;
-    }
-
+function checkForBoxClosure() {
     let boxesClosed = 0;
-    if (row1 === row2) {
-        const minCol = Math.min(col1, col2);
-        const maxCol = Math.max(col1, col2);
-        if (row1 > 0) {
-            const topLeft = dots[row1 - 1][minCol];
-            const topRight = dots[row1 - 1][maxCol];
+    for (let row = 0; row < gridSize - 1; row++) {
+        for (let col = 0; col < gridSize - 1; col++) {
+            const topLeft = dots[row][col];
+            const topRight = dots[row][col + 1];
+            const bottomLeft = dots[row + 1][col];
+            const bottomRight = dots[row + 1][col + 1];
+
             if (isLineAlreadyDrawn(topLeft, topRight) &&
-                isLineAlreadyDrawn(topLeft, dot1) &&
-                isLineAlreadyDrawn(topRight, dot2)) {
-                boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
-                boxesClosed++;
-            }
-        }
-        if (row1 < gridSize - 1) {
-            const bottomLeft = dots[row1 + 1][minCol];
-            const bottomRight = dots[row1 + 1][maxCol];
-             if (isLineAlreadyDrawn(bottomLeft, bottomRight) &&
-                isLineAlreadyDrawn(bottomLeft, dot1) &&
-                isLineAlreadyDrawn(bottomRight, dot2)) {
-                boxes.push({ x: dot1.x, y: dot1.y, player: currentPlayer });
-                boxesClosed++;
-            }
-        }
-    } else {
-        const minRow = Math.min(row1, row2);
-        const maxRow = Math.max(row1, row2);
-        if (col1 > 0) {
-            const topLeft = dots[minRow][col1 - 1];
-            const bottomLeft = dots[maxRow][col1 - 1];
-            if (isLineAlreadyDrawn(topLeft, bottomLeft) &&
-                isLineAlreadyDrawn(topLeft, dot1) &&
-                isLineAlreadyDrawn(bottomLeft, dot2)) {
-                 boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
-                boxesClosed++;
-            }
-        }
-        if (col1 < gridSize - 1) {
-            const topRight = dots[minRow][col1 + 1];
-            const bottomRight = dots[maxRow][col1 + 1];
-             if (isLineAlreadyDrawn(topRight, bottomRight) &&
-                isLineAlreadyDrawn(topRight, dot1) &&
-                isLineAlreadyDrawn(bottomRight, dot2)) {
-                boxes.push({ x: dot1.x, y: dot1.y, player: currentPlayer });
-                boxesClosed++;
+                isLineAlreadyDrawn(topRight, bottomRight) &&
+                isLineAlreadyDrawn(bottomRight, bottomLeft) &&
+                isLineAlreadyDrawn(bottomLeft, topLeft)) {
+
+                const existingBox = boxes.find(box => box.x === topLeft.x && box.y === topLeft.y);
+                if (!existingBox) {
+                    boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
+                    boxesClosed++;
+                }
             }
         }
     }
@@ -178,12 +156,10 @@ canvas.addEventListener('click', (event) => {
             firstDot = clickedDot;
         } else if (clickedDot !== firstDot && !isLineAlreadyDrawn(firstDot, clickedDot)) {
             lines.push({ from: firstDot, to: clickedDot, player: currentPlayer });
-            const boxesClosed = checkForBoxClosure(firstDot, clickedDot);
+            const boxesClosed = checkForBoxClosure();
             scores[currentPlayer] += boxesClosed;
             updateScore();
-            if (boxesClosed === 0) {
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-            }
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
             firstDot = null;
             drawBoard();
         } else {
