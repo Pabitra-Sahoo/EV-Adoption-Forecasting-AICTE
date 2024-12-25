@@ -133,13 +133,13 @@ function checkForBoxClosure() {
 
                 const existingBox = boxes.find(box => box.x === topLeft.x && box.y === topLeft.y);
                 if (!existingBox) {
-                     boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
-                     boxesClosed++;
+                    boxes.push({ x: topLeft.x, y: topLeft.y, player: currentPlayer });
+                    boxesClosed++;
                 }
             }
         }
     }
-   return boxesClosed;
+    return boxesClosed;
 }
 
 function updateScore() {
